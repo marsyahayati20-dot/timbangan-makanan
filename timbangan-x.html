@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Timbangan Kalori dengan Variabel</title>
+<style>
+  body { font-family: Arial; text-align:center; background:#f5f5f5; }
+  h2 { margin:10px 0; }
+  .container { display:flex; justify-content:space-around; margin-top:20px; }
+  .foods, .scale { width:45%; background:#fff; padding:15px; border-radius:10px; }
+  .foods img { width:60px; margin:6px; cursor:grab; }
+  .dropzone { border:2px dashed #999; min-height:120px; padding:10px; border-radius:10px; }
+  .status { font-weight:bold; margin-top:10px; }
+  .ok { color:green; }
+  .no { color:red; }
+  .xbox { margin-top:10px; }
+  input { padding:6px; width:80px; }
+</style>
+</head>
+<body>
+
+<h2>⚖️ Timbangan Kalori Makanan</h2>
+<p>Seret makanan ke timbangan. Atur nilai <b>x</b> sampai <b>SEIMBANG</b>.</p>
+
+<div class="xbox">
+  Nilai <b>x</b> (kalori makanan ❓): 
+  <input type="number" id="xValue" value="50" onchange="recalcX()">
+</div>
+
+<div class="container">
+
+  <!-- DAFTAR MAKANAN -->
+  <div class="foods">
+    <h3>Makanan</h3>
+    <!-- apel -->
+    <img src="https://em-content.zobj.net/thumbs/120/apple/354/red-apple_1f34e.png"
+         draggable="true" ondragstart="drag(event)"
+         data-cal="50" id="apel">
+    <!-- roti -->
+    <img src="https://em-content.zobj.net/thumbs/120/apple/354/bread_1f35e.png"
+         draggable="true" ondragstart="drag(event)"
+         data-cal="100" id="roti">
+    <!-- telur -->
+    <img src="https://em-content.zobj.net/thumbs/120/apple/354/egg_1f95a.png"
+         draggable="true" ondragstart="drag(event)"
+         data-cal="80" id="telur">
+    <!-- misterius -->
+    <img src="https://em-content.zobj.net/thumbs/120/apple/354/question-mark_2753.png"
+         draggable="true" ondragstart="drag(event)"
+         data-cal="x" id="misterius">
+
+    <p style="font-size:13px">
+      Apel = 50 kal | Roti = 100 kal | Telur = 80 kal | ❓ = x kal
+    </p>
+  </div>
+
+  <!-- TIMBANGAN -->
+  <div class="scale">
+    <h3>Timbangan</h3>
+
+    <p><b>KIRI</b></p>
+    <div class="dropzone" id="left" ondrop="drop(event,'left')" ondragover="allowDrop(event)"></div>
+    <p>Total: <span id="leftCal">0</span> kal</p>
+
+    <p><b>KANAN</b></p>
+    <div class="dropzone" id="right" ondrop="drop(event,'right')" ondragover="allowDrop(event)"></div>
+    <p>Total: <span id="rightCal">0</span> kal</p>
+
+    <div id="result" class="status"></div>
+  </div>
+</div>
+
+<script>
+let leftTotal = 0;
+let rightTotal = 0;
+let xValue = Number(document.getElementById("xValue").value);
+
+// menyimpan jumlah item misterius di kiri & kanan
+let leftX = 0;
+let rightX = 0;
+
+function allowDrop(ev){
+  ev.preventDefault();
+}
+
+function drag(ev){
+  ev.dataTransfer.setData("id", ev.target.id);
+}
+
+function drop(ev, side){
+  ev.preventDefault();
+  let id = ev.dataTransfer.getData("id");
+  let item = document.getElementById(id);
+
+  let cal = item.dataset.cal;
+
+  // clone supaya bisa dipakai berkali-kali
+  let clone = item.cloneNode(true);
+  clone.removeAttribute("id");
+  clone.setAttribute("draggable","false");
+  ev.target.appendChild(clone);
+
+  if(cal === "x"){
+    if(side === "left") leftX++;
+    else rightX++;
+  } else {
+    let c = Number(cal);
+    if(side === "left") leftTotal += c;
+    else rightTotal += c;
+  }
+
+  updateTotals();
+}
+
+function recalcX(){
+  xValue = Number(document.getElementById("xValue").value);
+  updateTotals();
+}
+
+function updateTotals(){
+  let left = leftTotal + leftX * xValue;
+  let right = rightTotal + rightX * xValue;
+
+  document.getElementById("leftCal").innerText = left;
+  document.getElementById("rightCal").innerText = right;
+
+  checkBalance(left, right);
+}
+
+function checkBalance(left, right){
+  let res = document.getElementById("result");
+  if(left === right && (leftX + rightX) > 0){
+    res.innerText = "⚖️ SEIMBANG! Kamu menemukan nilai x yang tepat.";
+    res.className = "status ok";
+  } else {
+    res.innerText = "❌ BELUM SEIMBANG";
+    res.className = "status no";
+  }
+}
+</script>
+
+</body>
+</html>
